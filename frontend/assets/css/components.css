@@ -1,0 +1,5 @@
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border-radius: var(--radius);
+}

@@ -2,6 +2,14 @@
   --primary: #1b7f79;
   --primary-dark: #166a65;
   --bg-light: #f5fffd;
+  --bg-gradient: linear-gradient(135deg, #d9f4ef, #f5fffd);
+
+  --text-dark: #123;
   --text-muted: #6c8b8b;
-  --radius: 12px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.12);
 }

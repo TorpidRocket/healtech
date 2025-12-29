@@ -1,5 +1,32 @@
-.btn-primary {
+.input-group {
+  margin-bottom: 18px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid #d3e7e5;
+  outline: none;
+  font-size: 14px;
+}
+
+.input-group input:focus {
+  border-color: var(--primary);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  border: none;
   background: var(--primary);
-  color: #fff;
-  border-radius: var(--radius);
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.login-btn:hover {
+  background: var(--primary-dark);
 }

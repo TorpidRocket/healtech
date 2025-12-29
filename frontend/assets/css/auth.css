@@ -1,4 +1,107 @@
 .login-card {
   width: 380px;
   padding: 40px;
+  border-radius: var(--radius-lg);
+  background: white;
+  box-shadow: var(--shadow-soft);
+}
+
+.login-card h1 {
+  text-align: center;
+  color: var(--primary);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 25px;
+}
+
+/* Role toggle */
+.role-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.role-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid #cfe5e2;
+  background: #f6fffd;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.3s ease;
+}
+
+.role-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.forgot {
+  text-align: right;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.forgot a {
+  color: var(--primary);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Footer */
+.footer-text {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.footer-text a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  width: 320px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.modal-content h3 {
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+
+.modal-content p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+}
+
+.close {
+  text-align: right;
+  font-size: 14px;
+  cursor: pointer;
+  color: #999;
 }

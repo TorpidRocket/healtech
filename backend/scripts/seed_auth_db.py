@@ -10,21 +10,23 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = BASE_DIR / "healtech.db"
 SCHEMA_PATH = BASE_DIR / "schema.sql"
-DATA_DIR = BASE_DIR / "data"
 
+DATA_DIR = BASE_DIR / "data"
 DOCTOR_CSV = DATA_DIR / "doctor_auth.csv"
 PATIENT_CSV = DATA_DIR / "patient_auth.csv"
 
 # ----------------------------
-# Helper: hash password safely
+# Password hashing (SAFE)
 # ----------------------------
-def hash_password(plain_password: str) -> str:
+def hash_password(password: str) -> str:
     """
-    Real-world safe hashing:
-    1. SHA-256 pre-hash (avoids bcrypt 72-byte limit)
-    2. bcrypt hash (slow + secure)
+    Production-safe hashing:
+    1. Strip hidden whitespace
+    2. SHA-256 pre-hash (avoids bcrypt 72-byte limit)
+    3. bcrypt hash
     """
-    sha = hashlib.sha256(plain_password.encode("utf-8")).hexdigest()
+    clean = password.strip()
+    sha = hashlib.sha256(clean.encode("utf-8")).hexdigest()
     return bcrypt.hash(sha)
 
 # ----------------------------
@@ -44,14 +46,15 @@ def seed_doctors():
     df = pd.read_csv(DOCTOR_CSV)
 
     for _, row in df.iterrows():
-        password_hash = hash_password(row["password"])
+        doctor_id = str(row["doctor_id"]).strip()
+        password = str(row["password"])
 
         cur.execute(
             """
             INSERT OR IGNORE INTO doctors (doctor_id, password_hash)
             VALUES (?, ?)
             """,
-            (row["doctor_id"], password_hash)
+            (doctor_id, hash_password(password))
         )
 
 # ----------------------------
@@ -61,14 +64,15 @@ def seed_patients():
     df = pd.read_csv(PATIENT_CSV)
 
     for _, row in df.iterrows():
-        password_hash = hash_password(row["password"])
+        patient_id = str(row["patient_id"]).strip()
+        password = str(row["password"])
 
         cur.execute(
             """
             INSERT OR IGNORE INTO patients (patient_id, password_hash)
             VALUES (?, ?)
             """,
-            (row["patient_id"], password_hash)
+            (patient_id, hash_password(password))
         )
 
 # ----------------------------

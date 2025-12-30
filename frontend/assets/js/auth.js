@@ -1,13 +1,56 @@
-function setRole(role, btn){
-  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  console.log("Selected Role:", role);
+let selectedRole = "patient";
+
+function setRole(role, btn) {
+  selectedRole = role.toLowerCase();
+
+  document.querySelectorAll(".role-btn").forEach(b => {
+    b.classList.remove("active");
+  });
+  btn.classList.add("active");
 }
 
-function openModal(){
-  document.getElementById('forgotModal').style.display='flex';
-}
+async function loginUser() {
+  const id = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
 
-function closeModal(){
-  document.getElementById('forgotModal').style.display='none';
+  if (!id || !password) {
+    alert("Please enter both ID and password");
+    return;
+  }
+
+  const endpoint =
+    selectedRole === "doctor"
+      ? "http://127.0.0.1:5000/api/login/doctor"
+      : "http://127.0.0.1:5000/api/login/patient";
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: id,
+        password: password
+      })
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      alert(`${result.role} login successful`);
+
+      // 🔀 Role-based redirect (placeholder)
+      if (result.role === "doctor") {
+        window.location.href = "../doctor/dashboard.html";
+      } else {
+        window.location.href = "../patient/dashboard.html";
+      }
+    } else {
+      alert("Invalid credentials");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Server error. Please try again later.");
+  }
 }

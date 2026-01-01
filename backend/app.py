@@ -6,6 +6,11 @@ from passlib.hash import bcrypt
 from pathlib import Path
 import time
 import random
+import os
+import smtplib
+from email.message import EmailMessage
+from dotenv import load_dotenv
+
 # ----------------------------
 # App setup
 # ----------------------------
@@ -14,6 +19,10 @@ CORS(app)
 
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "healtech.db"
+
+load_dotenv()
+MAIL_USER = os.getenv("MAIL_USER")
+MAIL_PASS = os.getenv("MAIL_PASS")
 
 # ----------------------------
 # Helpers
@@ -39,6 +48,27 @@ def fetch_one(query, params):
 def hash_otp(otp: str) -> str:
     sha = hashlib.sha256(otp.encode("utf-8")).hexdigest()
     return bcrypt.using(rounds=10).hash(sha)
+
+def send_otp_email(to_email: str, otp: str):
+    msg = EmailMessage()
+    msg["Subject"] = "Healtech Password Reset OTP"
+    msg["From"] = MAIL_USER
+    msg["To"] = to_email
+
+    msg.set_content(
+        f"""
+Your Healtech OTP is:
+
+{otp}
+
+This OTP is valid for 15 minutes.
+If you did not request this, please ignore this email.
+"""
+    )
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
+        server.login(MAIL_USER, MAIL_PASS)
+        server.send_message(msg)
 
 # ----------------------------
 # Routes
@@ -126,11 +156,20 @@ def request_otp():
         """,
         (email.lower(), role, otp_hash, expires_at, now)
     )
+    cur.execute(
+        "UPDATE password_reset_otps SET used = 1 WHERE email = ? AND role = ?",
+        (email, role)
+    )
     conn.commit()
     conn.close()
 
-    # PHASE 1: print OTP to console (email later)
-    print(f"[OTP] {email} ({role}) → {otp}")
+    try:
+        send_otp_email(email, otp)
+    except Exception as e:
+        print(f"[EMAIL FAILED] {e}")
+        print(f"[OTP] {email} ({role}) → {otp}")
+    # Print OTP to console (email later)
+    # print(f"[OTP] {email} ({role}) → {otp}")
 
     return jsonify({"status": "otp_sent"}), 200
 

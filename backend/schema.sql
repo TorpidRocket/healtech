@@ -1,10 +1,5 @@
--- Drop old tables
-DROP TABLE IF EXISTS doctors;
-DROP TABLE IF EXISTS patients;
-DROP TABLE IF EXISTS password_reset_otps;
-
 -- Doctors
-CREATE TABLE doctors_auth (
+CREATE TABLE IF NOT EXISTS doctors_auth (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     doctor_id TEXT UNIQUE NOT NULL,
     email TEXT NOT NULL,
@@ -13,10 +8,21 @@ CREATE TABLE doctors_auth (
 );
 
 -- Patients
-CREATE TABLE patients_auth (
+CREATE TABLE IF NOT EXISTS patients_auth (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     patient_id TEXT UNIQUE NOT NULL,
     email TEXT NOT NULL,
     password_hash TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+);
+
+-- OTP table for password reset
+CREATE TABLE IF NOT EXISTS password_reset_otps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL,
+    role TEXT NOT NULL,              -- 'doctor' or 'patient'
+    otp_hash TEXT NOT NULL,
+    expires_at INTEGER NOT NULL,
+    used INTEGER DEFAULT 0,
     created_at INTEGER NOT NULL
 );

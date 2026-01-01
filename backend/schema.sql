@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS password_reset_otps;
 CREATE TABLE doctors_auth (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     doctor_id TEXT UNIQUE NOT NULL,
-    email TEXT UNIQUE NOT NULL,
+    email TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     created_at INTEGER NOT NULL
 );
@@ -16,7 +16,7 @@ CREATE TABLE doctors_auth (
 CREATE TABLE patients_auth (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     patient_id TEXT UNIQUE NOT NULL,
-    email TEXT UNIQUE NOT NULL,
+    email TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     created_at INTEGER NOT NULL
 );

@@ -50,7 +50,7 @@ def doctor_login():
         return jsonify({"error": "Missing credentials"}), 400
 
     row = fetch_one(
-        "SELECT password_hash FROM doctors WHERE doctor_id = ?",
+        "SELECT password_hash FROM doctors_auth WHERE doctor_id = ?",
         (doctor_id,)
     )
 
@@ -74,7 +74,7 @@ def patient_login():
         return jsonify({"error": "Missing credentials"}), 400
 
     row = fetch_one(
-        "SELECT password_hash FROM patients WHERE patient_id = ?",
+        "SELECT password_hash FROM patients_auth WHERE patient_id = ?",
         (patient_id,)
     )
 

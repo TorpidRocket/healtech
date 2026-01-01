@@ -22,8 +22,10 @@ def verify_password(plain_password: str, stored_hash: str) -> bool:
     Verify password using:
     SHA-256 pre-hash → bcrypt verify
     """
-    sha = hashlib.sha256(plain_password.encode("utf-8")).hexdigest()
+    clean = plain_password.strip()
+    sha = hashlib.sha256(clean.encode("utf-8")).hexdigest()
     return bcrypt.verify(sha, stored_hash)
+
 
 def fetch_one(query, params):
     conn = sqlite3.connect(DB_PATH)
@@ -83,7 +85,6 @@ def patient_login():
         }), 200
 
     return jsonify({"status": "invalid credentials"}), 401
-
 
 # ----------------------------
 # Run

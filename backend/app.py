@@ -10,6 +10,7 @@ import os
 import smtplib
 from email.message import EmailMessage
 from dotenv import load_dotenv
+import re
 
 # ----------------------------
 # App setup
@@ -24,9 +25,18 @@ load_dotenv()
 MAIL_USER = os.getenv("MAIL_USER")
 MAIL_PASS = os.getenv("MAIL_PASS")
 
+PASSWORD_REGEX = r'^[A-Za-z0-9 !#$%&*,-.]+$'
+
+
+
 # ----------------------------
 # Helpers
 # ----------------------------
+def hash_new_password(password: str) -> str:
+    clean = password.strip()
+    sha = hashlib.sha256(clean.encode("utf-8")).hexdigest()
+    return bcrypt.using(rounds=10).hash(sha)
+
 def verify_password(plain_password: str, stored_hash: str) -> bool:
     """
     Verify password using:
@@ -150,16 +160,22 @@ def request_otp():
     cur = conn.cursor()
     cur.execute(
         """
+        UPDATE password_reset_otps
+        SET used = 1
+        WHERE email = ? AND role = ? AND used = 0
+        """,
+        (email, role)
+    )
+    
+    cur.execute(
+        """
         INSERT INTO password_reset_otps
-        (email, role, otp_hash, expires_at, created_at)
-        VALUES (?, ?, ?, ?, ?)
+        (email, role, otp_hash, expires_at, used, created_at)
+        VALUES (?, ?, ?, ?, 0, ?)
         """,
         (email.lower(), role, otp_hash, expires_at, now)
     )
-    cur.execute(
-        "UPDATE password_reset_otps SET used = 1 WHERE email = ? AND role = ?",
-        (email, role)
-    )
+    
     conn.commit()
     conn.close()
 
@@ -183,9 +199,12 @@ def verify_otp():
     if not email or not otp or role not in ("doctor", "patient"):
         return jsonify({"error": "Invalid request"}), 400
 
+    email = email.strip().lower()
+
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
+    # Fetch latest valid OTP
     cur.execute(
         """
         SELECT id, otp_hash, expires_at
@@ -194,11 +213,10 @@ def verify_otp():
         ORDER BY created_at DESC
         LIMIT 1
         """,
-        (email.lower(), role)
+        (email, role)
     )
 
     row = cur.fetchone()
-
     if not row:
         conn.close()
         return jsonify({"error": "OTP not found"}), 404
@@ -214,15 +232,98 @@ def verify_otp():
         conn.close()
         return jsonify({"error": "Invalid OTP"}), 401
 
-    # mark OTP as used
+    # Mark OTP as used
     cur.execute(
         "UPDATE password_reset_otps SET used = 1 WHERE id = ?",
         (otp_id,)
     )
+
+    # 🔥 RETRIEVE USER_ID BASED ON EMAIL + ROLE
+    table = "doctors_auth" if role == "doctor" else "patients_auth"
+    id_col = "doctor_id" if role == "doctor" else "patient_id"
+
+    cur.execute(
+        f"SELECT {id_col} FROM {table} WHERE email = ?",
+        (email,)
+    )
+    user_row = cur.fetchone()
+
     conn.commit()
     conn.close()
 
-    return jsonify({"status": "otp_verified"}), 200
+    if not user_row:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify({
+        "status": "otp_verified",
+        "user_id": user_row[0],
+        "role": role
+    }), 200
+
+
+@app.post("/api/forgot/reset")
+def reset_password():
+    data = request.get_json()
+
+    email = data.get("email")
+    role = data.get("role")
+    new_password = data.get("new_password")
+    confirm_password = data.get("confirm_password")
+
+    if not all([email, role, new_password, confirm_password]):
+        return jsonify({"error": "Missing fields"}), 400
+
+    if role not in ("doctor", "patient"):
+        return jsonify({"error": "Invalid role"}), 400
+
+    if new_password != confirm_password:
+        return jsonify({"error": "Passwords do not match"}), 400
+
+    if not re.match(PASSWORD_REGEX, new_password):
+        return jsonify({"error": "Password contains invalid characters"}), 400
+
+    email = email.strip().lower()
+
+    table = "doctors_auth" if role == "doctor" else "patients_auth"
+    id_col = "doctor_id" if role == "doctor" else "patient_id"
+
+    password_hash = hash_new_password(new_password)
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    # 🔥 RETRIEVE USER_ID AGAIN (AUTHORITATIVE)
+    cur.execute(
+        f"SELECT {id_col} FROM {table} WHERE email = ?",
+        (email,)
+    )
+    row = cur.fetchone()
+
+    if not row:
+        conn.close()
+        return jsonify({"error": "User not found"}), 404
+
+    user_id = row[0]
+
+    # Update password
+    cur.execute(
+        f"""
+        UPDATE {table}
+        SET password_hash = ?
+        WHERE {id_col} = ?
+        """,
+        (password_hash, user_id)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "status": "password_reset_success",
+        "user_id": user_id
+    }), 200
+
+
 
 # ----------------------------
 # Run

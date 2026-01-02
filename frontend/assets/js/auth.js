@@ -55,33 +55,33 @@ async function loginUser() {
   }
 }
 
-async function sendResetLink() {
-  const email = document.querySelector("#forgotModal input").value.trim();
+// async function sendResetLink() {
+//   const email = document.querySelector("#forgotModal input").value.trim();
 
-  if (!email) {
-    alert("Please enter your ID");
-    return;
-  }
+//   if (!email) {
+//     alert("Please enter your ID");
+//     return;
+//   }
 
-  const endpoint =
-    selectedRole === "doctor"
-      ? "http://127.0.0.1:5000/api/forgot/doctor"
-      : "http://127.0.0.1:5000/api/forgot/patient";
+//   const endpoint =
+//     selectedRole === "doctor"
+//       ? "http://127.0.0.1:5000/api/forgot/doctor"
+//       : "http://127.0.0.1:5000/api/forgot/patient";
 
-  try {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: email })
-    });
+//   try {
+//     const res = await fetch(endpoint, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ id: email })
+//     });
 
-    if (res.ok) {
-      alert("Password reset request received.");
-      closeModal();
-    } else {
-      alert("User not found");
-    }
-  } catch {
-    alert("Server error");
-  }
+//     if (res.ok) {
+//       alert("Password reset request received.");
+//       closeModal();
+//     } else {
+//       alert("User not found");
+//     }
+//   } catch {
+//     alert("Server error");
+//   }
 }

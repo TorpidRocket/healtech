@@ -1,6 +1,39 @@
-function requestOTP() {
-  const email = document.getElementById("email").value;
-  const role = document.getElementById("role").value;
+// forgot.js
+let selectedRole = localStorage.getItem("fp_role") || "patient";
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.body.classList.add(selectedRole);
+});
+
+function applyRoleBackground() {
+  const role = localStorage.getItem("fp_role");
+  const body = document.body;
+
+  body.classList.remove("doctor", "patient");
+
+  if (role === "doctor") {
+    body.classList.add("doctor");
+  } else {
+    body.classList.add("patient");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  applyRoleBackground();
+  applyRoleToggleState();
+});
+
+
+async function requestOTP() {
+  const email = document.getElementById("email").value.trim();
+
+  if (!email) {
+    alert("Please enter your registered email");
+    return;
+  }
+
+  // 🔑 Get role from storage
+  const role = localStorage.getItem("fp_role") || "patient";
 
   fetch("http://127.0.0.1:5000/api/forgot/request", {
     method: "POST",
@@ -17,8 +50,25 @@ function requestOTP() {
     } else {
       document.getElementById("msg").innerText = data.error;
     }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Server error. Please try again.");
   });
 }
+
+
+function applyRoleToggleState() {
+  const role = localStorage.getItem("fp_role");
+
+  if (!role) return;
+
+  document.querySelectorAll(".role-btn").forEach(btn => {
+    const btnRole = btn.innerText.toLowerCase();
+    btn.classList.toggle("active", btnRole === role);
+  });
+}
+
 
 function verifyOTP() {
   const otp = document.getElementById("otp").value;
@@ -69,3 +119,57 @@ function resetPassword() {
     }
   });
 }
+async function resendOTP() {
+  const email = localStorage.getItem("fp_email");
+  const role = localStorage.getItem("fp_role") || "patient";
+
+  if (!email) {
+    alert("Missing email. Please start again.");
+    window.location.href = "forgot.html";
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:5000/api/forgot/request",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, role })
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      document.getElementById("msg").innerText =
+        "OTP resent successfully. Please check your email.";
+    } else {
+      document.getElementById("msg").innerText =
+        data.error || "Unable to resend OTP.";
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Server error. Please try again later.");
+  }
+}
+
+function setRole(role, btn) {
+  localStorage.setItem("fp_role", role);
+
+  document.querySelectorAll(".role-btn").forEach(b =>
+    b.classList.remove("active")
+  );
+  btn.classList.add("active");
+
+  // update background immediately
+  document.body.classList.remove("doctor", "patient");
+  document.body.classList.add(role);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const email = localStorage.getItem("fp_email");
+  if (email) {
+    document.getElementById("email").value = email;
+  }
+});

@@ -1,14 +1,46 @@
-<h2>Forgot Password</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Healtech | Forgot Password</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<select id="role">
-  <option value="doctor">Doctor</option>
-  <option value="patient">Patient</option>
-</select>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/auth.css">
+</head>
 
-<input type="email" id="email" placeholder="Email" required />
+<body class="auth-bg">
 
-<button onclick="requestOTP()">Send OTP</button>
+  <div class="login-card">
+    <h1>Forgot Password</h1>
+    <div class="subtitle">We’ll send you a one-time code</div>
 
-<p id="msg"></p>
+    <div class="role-toggle">
+      <button class="role-btn active" onclick="setRole('patient', this)">
+        Patient
+      </button>
+      <button class="role-btn" onclick="setRole('doctor', this)">
+        Doctor
+      </button>
+    </div>
 
+
+    <div class="input-group">
+      <input type="email" id="email" placeholder="Registered email" required>
+    </div>
+
+    <button class="login-btn" onclick="requestOTP()">Send OTP</button>
+
+    <div class="footer-text">
+      Remembered your password?
+      <a href="login.html">Back to login</a>
+    </div>
+  </div>
+
+  
+</body>
+</html>
 <script src="../../assets/js/forgot.js"></script>

@@ -1,9 +1,57 @@
-<h2>Verify OTP</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Healtech | Verify OTP</title>
 
-<input type="text" id="otp" placeholder="Enter OTP" />
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/auth.css">
+</head>
 
-<button onclick="verifyOTP()">Verify</button>
+<body class="auth-bg">
 
-<p id="msg"></p>
+  <!-- 🔐 Guard -->
+  <script>
+    if (!localStorage.getItem("fp_email") || !localStorage.getItem("fp_role")) {
+      window.location.href = "login.html";
+    }
+  </script>
 
-<script src="../../assets/js/forgot.js"></script>
+  <div class="login-card">
+    <h1>Verify OTP</h1>
+    <div class="subtitle">Check your email for the 6-digit code</div>
+
+    <!-- 📧 Non-editable email -->
+    <div class="input-group">
+      <input type="email" id="email" disabled />
+    </div>
+
+    <!-- 🔢 OTP input -->
+    <div class="input-group">
+      <input type="text" id="otp" placeholder="Enter OTP" />
+    </div>
+
+    <!-- 🔘 Buttons -->
+    <div style="display: flex; gap: 10px;">
+      <button class="login-btn" onclick="verifyOTP()" style="flex: 1;">
+        Verify
+      </button>
+      <button class="login-btn" onclick="resendOTP()" style="flex: 1; background: #6b7280;">
+        Resend OTP
+      </button>
+    </div>
+
+    <p id="msg"></p>
+
+    <!-- 🔁 Footer -->
+    <div class="footer-text">
+      Not your correct email?
+      <a href="forgot.html">Go back</a>
+    </div>
+  </div>
+
+  <script src="../../assets/js/forgot.js"></script>
+</body>
+</html>

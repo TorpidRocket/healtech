@@ -1,12 +1,21 @@
+// single source of truth
 let selectedRole = "patient";
 
 function setRole(role, btn) {
-  selectedRole = role.toLowerCase();
+  selectedRole = role;
 
-  document.querySelectorAll(".role-btn").forEach(b => {
-    b.classList.remove("active");
-  });
+  // store for forgot page
+  localStorage.setItem("fp_role", role);
+
+  // toggle UI
+  document.querySelectorAll(".role-btn").forEach(b =>
+    b.classList.remove("active")
+  );
   btn.classList.add("active");
+
+  // apply background on login page too
+  document.body.classList.remove("doctor", "patient");
+  document.body.classList.add(role);
 }
 
 async function loginUser() {
@@ -26,22 +35,17 @@ async function loginUser() {
   try {
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        id: id,
-        password: password
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, password })
     });
 
     const result = await response.json();
 
     if (response.ok) {
-      alert(`${result.role} login successful`);
+      alert(`${selectedRole} login successful`);
 
-      // 🔀 Role-based redirect (placeholder)
-      if (result.role === "doctor") {
+      // Placeholder redirects
+      if (selectedRole === "doctor") {
         window.location.href = "../doctor/dashboard.html";
       } else {
         window.location.href = "../patient/dashboard.html";
@@ -54,34 +58,15 @@ async function loginUser() {
     alert("Server error. Please try again later.");
   }
 }
+// function setRole(role, btn) {
+//   selectedRole = role;
 
-// async function sendResetLink() {
-//   const email = document.querySelector("#forgotModal input").value.trim();
+//   document.querySelectorAll(".role-btn").forEach(b =>
+//     b.classList.remove("active")
+//   );
+//   btn.classList.add("active");
 
-//   if (!email) {
-//     alert("Please enter your ID");
-//     return;
-//   }
-
-//   const endpoint =
-//     selectedRole === "doctor"
-//       ? "http://127.0.0.1:5000/api/forgot/doctor"
-//       : "http://127.0.0.1:5000/api/forgot/patient";
-
-//   try {
-//     const res = await fetch(endpoint, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({ id: email })
-//     });
-
-//     if (res.ok) {
-//       alert("Password reset request received.");
-//       closeModal();
-//     } else {
-//       alert("User not found");
-//     }
-//   } catch {
-//     alert("Server error");
-//   }
-}
+//   // 🔑 ADD THIS
+//   document.body.classList.remove("doctor", "patient");
+//   document.body.classList.add(role);
+// }

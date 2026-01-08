@@ -38,12 +38,16 @@
       <button class="login-btn" onclick="verifyOTP()" style="flex: 1;">
         Verify
       </button>
-      <button class="login-btn" onclick="resendOTP()" style="flex: 1; background: #6b7280;">
+      <button class="login-btn" id="resend-btn" onclick="resendOTP()" style="flex: 1; background: #6b7280;">
         Resend OTP
       </button>
     </div>
 
-    <p id="msg"></p>
+    <div
+      id="status-msg"
+      class="subtitle"
+      style="display: none; margin: 12px 0 6px 0;"
+    ></div>
 
     <!-- 🔁 Footer -->
     <div class="footer-text">

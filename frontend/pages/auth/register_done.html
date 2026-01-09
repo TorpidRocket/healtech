@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Healtech | Complete Registration</title>
+
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/auth.css">
+</head>
+
+<body class="auth-bg patient">
+
+  <!-- 🔐 Guard -->
+  <!-- <script>
+    if (!localStorage.getItem("reg_email") || !localStorage.getItem("reg_user_id")) {
+      window.location.href = "register_email.html";
+    }
+  </script> -->
+
+  <div class="login-card">
+    <h1>Welcome to Healtech 🎉</h1>
+    <div class="subtitle">
+      Your Patient ID has been generated.<br>
+      Please set a password to complete registration.
+    </div>
+
+    <!-- 🔒 Assigned ID -->
+    <div class="input-group">
+      <input type="text" id="uid" disabled />
+    </div>
+
+    <!-- 📧 Email -->
+    <div class="input-group">
+      <input type="email" id="email" disabled />
+    </div>
+
+    <!-- ⚠️ Password rules -->
+    <div
+      class="subtitle"
+      style="color: #dc2626; font-size: 13px; margin-bottom: 14px; line-height: 1.4;"
+    >
+      <strong>Password rules:</strong><br>
+      Allowed characters: 0–9, a–z, A–Z, space, ! # $ % & * , - .
+    </div>
+
+    <!-- 🔑 New password -->
+    <div class="input-group" style="position: relative;">
+      <input type="password" id="new_pass" placeholder="New Password" />
+      <span
+        onclick="togglePassword('new_pass', this)"
+        style="
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 12px;
+          color: #2563eb;
+          cursor: pointer;
+          user-select: none;
+        "
+        title="Show or hide password"
+      >
+        👁️
+      </span>
+    </div>
+
+    <!-- 🔑 Confirm password -->
+    <div class="input-group" style="position: relative;">
+      <input type="password" id="confirm_pass" placeholder="Confirm Password" />
+      <span
+        onclick="togglePassword('confirm_pass', this)"
+        style="
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 12px;
+          color: #2563eb;
+          cursor: pointer;
+          user-select: none;
+        "
+        title="Show or hide password"
+      >
+        👁️
+      </span>
+    </div>
+
+    <!-- 🔔 Status -->
+    <div id="status-msg" class="subtitle" style="display:none; margin: 12px 0;"></div>
+
+    <button class="login-btn" onclick="completeRegistration()">
+      Create Account
+    </button>
+  </div>
+
+  <script src="../../assets/js/register.js"></script>
+
+  <!-- 🔁 Autofill -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("uid").value =
+        localStorage.getItem("reg_user_id");
+      document.getElementById("email").value =
+        localStorage.getItem("reg_email");
+    });
+  </script>
+
+</body>
+</html>

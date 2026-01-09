@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Healtech | Create Account</title>
+
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/auth.css">
+</head>
+
+<body class="auth-bg patient">
+
+  <div class="login-card">
+    <h1>Create Account</h1>
+    <div class="subtitle">Register as a new patient</div>
+
+    <div class="input-group">
+      <input type="email" id="email" placeholder="Email address" />
+    </div>
+
+    <div id="status-msg" class="subtitle" style="display:none; margin: 12px 0;"></div>
+
+    <button class="login-btn" onclick="startRegistration()">
+      Send OTP
+    </button>
+
+    <div class="footer-text">
+      Already have an account?
+      <a href="login.html">Login</a>
+    </div>
+  </div>
+
+  <script src="../../assets/js/register.js"></script>
+</body>
+</html>

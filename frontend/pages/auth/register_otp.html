@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Healtech | Verify Email</title>
+
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/auth.css">
+</head>
+
+<body class="auth-bg patient">
+
+  <script>
+    if (!localStorage.getItem("reg_email")) {
+      window.location.href = "register_email.html";
+    }
+  </script>
+
+  <div class="login-card">
+    <h1>Verify Email</h1>
+    <div class="subtitle">Enter the OTP sent to your email</div>
+
+    <div class="input-group">
+      <input type="email" id="email" disabled />
+    </div>
+
+    <div class="input-group">
+      <input type="text" id="otp" placeholder="Enter OTP" />
+    </div>
+
+    <div id="status-msg" class="subtitle" style="display:none; margin: 12px 0;"></div>
+
+    <div style="display:flex; gap:10px;">
+      <button class="login-btn" onclick="verifyRegistrationOTP()" style="flex:1;">
+        Verify
+      </button>
+      <button class="login-btn" id="resend-btn" onclick="resendRegistrationOTP()" style="flex:1; background:#6b7280;">
+        Resend
+      </button>
+    </div>
+
+    <div class="footer-text">
+      Didn’t receive the code?
+    </div>
+  </div>
+
+  <script src="../../assets/js/register.js"></script>
+</body>
+</html>

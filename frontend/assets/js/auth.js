@@ -58,6 +58,18 @@ async function loginUser() {
     alert("Server error. Please try again later.");
   }
 }
+function togglePassword(inputId, toggleEl) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  if (input.type === "password") {
+    input.type = "text";
+    toggleEl.innerText = "-_-";
+  } else {
+    input.type = "password";
+    toggleEl.innerText = "👀";
+  }
+}
 // function setRole(role, btn) {
 //   selectedRole = role;
 

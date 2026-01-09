@@ -236,3 +236,16 @@ async function resetPassword() {
     showStatus("Server error. Please try again.", "error");
   }
 }
+function togglePassword(inputId, toggleEl) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  if (input.type === "password") {
+    input.type = "text";
+    toggleEl.innerText = "-_-";
+  } else {
+    input.type = "password";
+    toggleEl.innerText = "👀";
+  }
+}
+

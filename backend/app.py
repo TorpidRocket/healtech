@@ -11,7 +11,9 @@ import smtplib
 from email.message import EmailMessage
 from dotenv import load_dotenv
 import re
-
+import random
+import string
+from datetime import datetime, timedelta
 # ----------------------------
 # App setup
 # ----------------------------
@@ -79,6 +81,11 @@ If you did not request this, please ignore this email.
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
         server.login(MAIL_USER, MAIL_PASS)
         server.send_message(msg)
+def generate_otp():
+    return ''.join(random.choices(string.digits, k=6))
+def hash_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
 
 # ----------------------------
 # Routes
@@ -323,7 +330,89 @@ def reset_password():
         "user_id": user_id
     }), 200
 
+@app.post("/api/register/patient/start")
+def start_patient_registration():
+    data = request.get_json()
+    email = data.get("email")
 
+    if not email:
+        return jsonify({"error": "Email required"}), 400
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    # 1️⃣ Check if email already exists
+    cur.execute(
+        "SELECT 1 FROM patients_auth WHERE email = ?",
+        (email,)
+    )
+    if cur.fetchone():
+        conn.close()
+        return jsonify({"status": "email_exists"}), 200
+
+    # 2️⃣ Generate OTP
+    otp = generate_otp()
+    otp_hash = hash_text(otp)
+    expiry = datetime.utcnow() + timedelta(minutes=15)
+
+    # 3️⃣ Insert / replace temp registration
+    cur.execute("""
+        INSERT OR REPLACE INTO patient_registration_temp
+        (email, otp_hash, otp_expiry, verified)
+        VALUES (?, ?, ?, 0)
+    """, (email, otp_hash, expiry))
+
+    conn.commit()
+    conn.close()
+
+    # 4️⃣ Send OTP email
+    send_otp_email(email, otp)
+
+    return jsonify({"status": "otp_sent"}), 200
+
+@app.post("/api/register/patient/verify-otp")
+def verify_patient_registration_otp():
+    data = request.get_json()
+    email = data.get("email")
+    otp = data.get("otp")
+
+    if not email or not otp:
+        return jsonify({"error": "Missing data"}), 400
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT otp_hash, otp_expiry
+        FROM patient_registration_temp
+        WHERE email = ?
+    """, (email,))
+    row = cur.fetchone()
+
+    if not row:
+        conn.close()
+        return jsonify({"error": "No registration found"}), 400
+
+    otp_hash, expiry = row
+
+    if datetime.utcnow() > datetime.fromisoformat(expiry):
+        conn.close()
+        return jsonify({"error": "OTP expired"}), 400
+
+    if hash_text(otp) != otp_hash:
+        conn.close()
+        return jsonify({"error": "Invalid OTP"}), 400
+
+    cur.execute("""
+        UPDATE patient_registration_temp
+        SET verified = 1
+        WHERE email = ?
+    """, (email,))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "otp_verified"}), 200
 
 # ----------------------------
 # Run

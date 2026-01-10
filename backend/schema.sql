@@ -26,3 +26,11 @@ CREATE TABLE IF NOT EXISTS password_reset_otps (
     used INTEGER DEFAULT 0,
     created_at INTEGER NOT NULL
 );
+-- Temporary registration table
+CREATE TABLE IF NOT EXISTS patient_registration_temp (
+  email TEXT PRIMARY KEY,
+  otp_hash TEXT NOT NULL,
+  otp_expiry DATETIME NOT NULL,
+  verified INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

@@ -27,7 +27,7 @@ load_dotenv()
 MAIL_USER = os.getenv("MAIL_USER")
 MAIL_PASS = os.getenv("MAIL_PASS")
 
-PASSWORD_REGEX = r'^[A-Za-z0-9 !#$%&*,-.]+$'
+PASSWORD_REGEX = r'^[A-Za-z0-9 !#$%&*,-.]{6-20}$'
 
 
 
@@ -57,9 +57,9 @@ def fetch_one(query, params):
     conn.close()
     return row
 
-def hash_otp(otp: str) -> str:
-    sha = hashlib.sha256(otp.encode("utf-8")).hexdigest()
-    return bcrypt.using(rounds=10).hash(sha)
+# def hash_otp(otp: str) -> str:
+#     sha = hashlib.sha256(otp.encode("utf-8")).hexdigest()
+#     return bcrypt.using(rounds=10).hash(sha)
 
 def send_otp_email(to_email: str, otp: str):
     msg = EmailMessage()
@@ -83,9 +83,51 @@ If you did not request this, please ignore this email.
         server.send_message(msg)
 def generate_otp():
     return ''.join(random.choices(string.digits, k=6))
+
 def hash_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
+def generate_next_patient_id(cur):
+    cur.execute("""
+        SELECT patient_id
+        FROM patients_auth
+        ORDER BY patient_id DESC
+        LIMIT 1
+    """)
+    row = cur.fetchone()
+
+    if not row:
+        return "PAAA001"
+
+    last_id = row[0]          # e.g. PAAA027
+    next_num = int(last_id[4:]) + 1
+    return f"PAAA{next_num:03d}"
+
+def send_email(to_email: str, subject: str, body: str):
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = MAIL_USER
+    msg["To"] = to_email
+    msg.set_content(body)
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
+        server.login(MAIL_USER, MAIL_PASS)
+        server.send_message(msg)
+
+def send_new_patient_id_email(email, patient_id):
+    subject = "Your Healtech Patient ID"
+    body = f"""
+Welcome to Healtech!
+
+Your Patient ID is:
+{patient_id}
+
+You can now log in and start using Healtech.
+
+Regards,
+Healtech Team
+"""
+    send_email(email, subject, body)
 
 # ----------------------------
 # Routes
@@ -159,7 +201,8 @@ def request_otp():
         return jsonify({"error": "Account not found"}), 404
 
     otp = f"{random.randint(100000, 999999)}"
-    otp_hash = hash_otp(otp)
+    # otp_hash = hash_otp(otp)
+    otp_hash = hash_text(otp)
     now = int(time.time())
     expires_at = now + 15 * 60
 
@@ -413,6 +456,62 @@ def verify_patient_registration_otp():
     conn.close()
 
     return jsonify({"status": "otp_verified"}), 200
+
+@app.post("/api/register/patient/complete")
+def complete_patient_registration():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"error": "Missing data"}), 400
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    # 1️⃣ Ensure email is verified
+    cur.execute("""
+        SELECT verified
+        FROM patient_registration_temp
+        WHERE email = ?
+    """, (email,))
+    row = cur.fetchone()
+
+    if not row or row[0] != 1:
+        conn.close()
+        return jsonify({"error": "Email not verified"}), 400
+
+    # 2️⃣ Generate new patient ID
+    patient_id = generate_next_patient_id(cur)
+
+    # # 3️⃣ Hash password (SHA-256 → bcrypt)
+    # sha = hashlib.sha256(password.encode("utf-8")).hexdigest()
+    # password_hash = bcrypt.hash(sha)
+    
+    password_hash = hash_new_password(password)
+
+    # 4️⃣ Insert into patients_auth
+    cur.execute("""
+        INSERT INTO patients_auth (patient_id, email, password_hash)
+        VALUES (?, ?, ?)
+    """, (patient_id, email, password_hash))
+
+    # 5️⃣ Cleanup temp registration
+    cur.execute("""
+        DELETE FROM patient_registration_temp
+        WHERE email = ?
+    """, (email,))
+
+    conn.commit()
+    conn.close()
+
+    # 6️⃣ Send ID email
+    send_new_patient_id_email(email, patient_id)
+
+    return jsonify({
+        "status": "account_created",
+        "patient_id": patient_id
+    }), 200
 
 # ----------------------------
 # Run

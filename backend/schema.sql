@@ -2,18 +2,17 @@
 CREATE TABLE IF NOT EXISTS doctors_auth (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     doctor_id TEXT UNIQUE NOT NULL,
-    email TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     created_at INTEGER NOT NULL
 );
 
 -- Patients
 CREATE TABLE IF NOT EXISTS patients_auth (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    patient_id TEXT UNIQUE NOT NULL,
-    email TEXT NOT NULL,
-    password_hash TEXT NOT NULL,
-    created_at INTEGER NOT NULL
+  patient_id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- OTP table for password reset

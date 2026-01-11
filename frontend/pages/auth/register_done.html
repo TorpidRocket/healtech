@@ -12,24 +12,28 @@
 
 <body class="auth-bg patient">
 
-  <!-- 🔐 Guard -->
-  <!-- <script>
-    if (!localStorage.getItem("reg_email") || !localStorage.getItem("reg_user_id")) {
-      window.location.href = "register_email.html";
-    }
-  </script> -->
+<!-- <script>
+  if (
+    !localStorage.getItem("reg_email") ||
+    localStorage.getItem("reg_otp_verified") !== "true"
+  ) {
+    window.location.href = "register_email.html";
+  }
+</script> -->
 
   <div class="login-card">
-    <h1>Welcome to Healtech 🎉</h1>
+    <h1>Welcome 🎉</h1>
+    <br>
     <div class="subtitle">
       Your Patient ID has been generated.<br>
       Please set a password to complete registration.
     </div>
+    <br>
 
     <!-- 🔒 Assigned ID -->
-    <div class="input-group">
+    <!-- <div class="input-group">
       <input type="text" id="uid" disabled />
-    </div>
+    </div> -->
 
     <!-- 📧 Email -->
     <div class="input-group">
@@ -41,51 +45,45 @@
       class="subtitle"
       style="color: #dc2626; font-size: 13px; margin-bottom: 14px; line-height: 1.4;"
     >
-      <strong>Password rules:</strong><br>
-      Allowed characters: 0–9, a–z, A–Z, space, ! # $ % & * , - .
+      <strong>Password Rules:</strong> 6-20 characters<br>
+
+      <u>Allowed Symbols</u>: 0–9 a–z A–Z <i>space</i> ! # $ % & * , - .
     </div>
 
     <!-- 🔑 New password -->
-    <div class="input-group" style="position: relative;">
-      <input type="password" id="new_pass" placeholder="New Password" />
+    <div class="input-group password-group">
+      <input
+        type="password"
+        id="new_pass"
+        placeholder="New Password"
+      />
       <span
+        class="password-toggle"
         onclick="togglePassword('new_pass', this)"
-        style="
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          font-size: 12px;
-          color: #2563eb;
-          cursor: pointer;
-          user-select: none;
-        "
-        title="Show or hide password"
+        title="Show / Hide Password"
       >
-        👁️
+        👀
       </span>
     </div>
 
     <!-- 🔑 Confirm password -->
-    <div class="input-group" style="position: relative;">
-      <input type="password" id="confirm_pass" placeholder="Confirm Password" />
+    
+
+    <div class="input-group password-group">
+      <input
+        type="password"
+        id="confirm_pass"
+        placeholder="Confirm Password"
+      />
       <span
+        class="password-toggle"
         onclick="togglePassword('confirm_pass', this)"
-        style="
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          font-size: 12px;
-          color: #2563eb;
-          cursor: pointer;
-          user-select: none;
-        "
-        title="Show or hide password"
+        title="Show / Hide Password"
       >
-        👁️
+        👀
       </span>
     </div>
+    
 
     <!-- 🔔 Status -->
     <div id="status-msg" class="subtitle" style="display:none; margin: 12px 0;"></div>

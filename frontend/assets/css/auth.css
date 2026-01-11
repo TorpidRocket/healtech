@@ -1,5 +1,5 @@
 .login-card {
-  width: 380px;
+  width: max(380px, 21%);
   padding: 40px;
   border-radius: var(--radius-lg);
   background: white;
@@ -160,3 +160,16 @@
 }
 
 
+.password-group {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 30%;
+  transform: translateY(-5to Healtech 0%);
+  cursor: pointer;
+  font-size: 16px;
+  user-select: none;
+}

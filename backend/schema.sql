@@ -33,3 +33,41 @@ CREATE TABLE IF NOT EXISTS patient_registration_temp (
   verified INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- =====================================================
+-- Documents uploaded by patients
+-- =====================================================
+CREATE TABLE IF NOT EXISTS documents (
+  document_id     INTEGER PRIMARY KEY AUTOINCREMENT,
+  patient_id      TEXT NOT NULL,
+  file_name       TEXT NOT NULL,
+  document_type   TEXT NOT NULL,        -- blood_test, prescription, scan, etc.
+  storage_path    TEXT NOT NULL,        -- local path OR cloud URL
+  uploaded_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (patient_id)
+    REFERENCES patients_auth(patient_id)
+    ON DELETE CASCADE
+);
+
+-- =====================================================
+-- Doctor access control for documents (privacy layer)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS document_access (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  document_id     INTEGER NOT NULL,
+  doctor_id       TEXT NOT NULL,
+  can_view        INTEGER NOT NULL DEFAULT 0,  -- 0 = no, 1 = yes
+  granted_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (document_id)
+    REFERENCES documents(document_id)
+    ON DELETE CASCADE,
+
+  FOREIGN KEY (doctor_id)
+    REFERENCES doctors_auth(doctor_id)
+    ON DELETE CASCADE,
+
+  UNIQUE (document_id, doctor_id)
+);
+

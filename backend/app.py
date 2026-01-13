@@ -1,6 +1,6 @@
 import sqlite3
 import hashlib
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from passlib.hash import bcrypt
 from pathlib import Path
@@ -14,6 +14,9 @@ import re
 import random
 import string
 from datetime import datetime, timedelta
+from werkzeug.utils import secure_filename
+
+
 # ----------------------------
 # App setup
 # ----------------------------
@@ -30,6 +33,13 @@ MAIL_PASS = os.getenv("MAIL_PASS")
 PASSWORD_REGEX = r'^[A-Za-z0-9 !#$%&*,-.]{6-20}$'
 
 
+UPLOAD_BASE = BASE_DIR / "uploads" / "patients"
+
+ALLOWED_EXTENSIONS = {
+    "pdf", "png", "jpg", "jpeg"
+}
+
+MAX_FILE_SIZE_MB = 10
 
 # ----------------------------
 # Helpers
@@ -128,6 +138,17 @@ Regards,
 Healtech Team
 """
     send_email(email, subject, body)
+def allowed_file(filename):
+    return (
+        "." in filename and
+        filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+    )
+
+
+def ensure_patient_folder(patient_id: str):
+    path = UPLOAD_BASE / patient_id
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 # ----------------------------
 # Routes
@@ -512,7 +533,139 @@ def complete_patient_registration():
         "status": "account_created",
         "patient_id": patient_id
     }), 200
+@app.post("/api/documents/upload")
+def upload_document():
+    """
+    Upload medical document for a patient
+    """
+    patient_id = request.form.get("patient_id")
+    document_type = request.form.get("document_type")
+    file = request.files.get("file")
 
+    if not patient_id or not document_type or not file:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    if not allowed_file(file.filename):
+        return jsonify({"error": "Unsupported file type"}), 400
+
+    # File size check
+    file.seek(0, os.SEEK_END)
+    size_mb = file.tell() / (1024 * 1024)
+    file.seek(0)
+
+    if size_mb > MAX_FILE_SIZE_MB:
+        return jsonify({"error": "File too large (max 10MB)"}), 400
+
+    # Secure filename
+    filename = secure_filename(file.filename)
+
+    # Create patient folder
+    patient_folder = ensure_patient_folder(patient_id)
+
+    # Resolve path
+    file_path = patient_folder / filename
+
+    # Save file
+    file.save(file_path)
+
+    # Insert metadata into DB
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT INTO documents (
+            patient_id,
+            file_name,
+            document_type,
+            storage_path
+        )
+        VALUES (?, ?, ?, ?)
+    """, (
+        patient_id,
+        filename,
+        document_type,
+        str(file_path)
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "status": "upload_success",
+        "file_name": filename
+    }), 201
+
+@app.get("/api/documents/patient/<patient_id>")
+def get_patient_documents(patient_id):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+
+        # Fetch documents for patient
+        cur.execute("""
+            SELECT
+                document_id,
+                document_type,
+                file_name,
+                uploaded_at,
+                storage_path
+            FROM documents
+            WHERE patient_id = ?
+            ORDER BY uploaded_at DESC
+        """, (patient_id,))
+
+        rows = cur.fetchall()
+        conn.close()
+
+        documents = []
+        for row in rows:
+            documents.append({
+                "id": row[0],                 # expose clean id to frontend
+                "document_type": row[1],
+                "file_name": row[2],
+                "uploaded_at": row[3],
+                "storage_path": row[4]
+            })
+
+        return jsonify({"documents": documents}), 200
+
+    except Exception as e:
+        print("❌ Document fetch error:", e)
+        return jsonify({"error": "Failed to fetch documents"}), 500
+
+@app.get("/api/documents/download/<int:document_id>")
+def download_document(document_id):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT file_name, storage_path
+            FROM documents
+            WHERE document_id = ?
+        """, (document_id,))
+
+        row = cur.fetchone()
+        conn.close()
+
+        if not row:
+            return jsonify({"error": "Document not found"}), 404
+
+        file_name, storage_path = row
+
+        if not os.path.exists(storage_path):
+            return jsonify({"error": "File missing on server"}), 404
+
+        # Let browser decide (PDF/image inline, others download)
+        return send_file(
+            storage_path,
+            as_attachment=False,
+            download_name=file_name
+        )
+
+    except Exception as e:
+        print("❌ Document download error:", e)
+        return jsonify({"error": "Unable to download document"}), 500
 # ----------------------------
 # Run
 # ----------------------------

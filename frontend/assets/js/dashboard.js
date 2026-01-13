@@ -1,38 +1,35 @@
-const documents = [
-  { date: "10 Jan 2026", type: "Blood Test", file: "CBC_Report.pdf" },
-  { date: "05 Jan 2026", type: "Prescription", file: "Rx_January.png" },
-  { date: "28 Dec 2025", type: "Scan", file: "Chest_Xray.jpg" }
-];
+// Sidebar toggle functionality - ONLY triggered by button click
+const sidebar = document.getElementById('sidebar');
+const toggleBtn = document.getElementById('toggleBtn');
 
-function toggleSidebar() {
-  document.getElementById("sidebar").classList.toggle("collapsed");
-  document.getElementById("main-content").classList.toggle("expanded");
-}
+// Toggle sidebar when button is clicked
+toggleBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    sidebar.classList.toggle('collapsed');
+    console.log('Sidebar toggled:', sidebar.classList.contains('collapsed'));
+});
 
-function switchTab(tab, el) {
-  document.querySelectorAll(".sidebar li").forEach(li =>
-    li.classList.remove("active")
-  );
-  el.classList.add("active");
+// Navigation active state based on current page
+const navItems = document.querySelectorAll('.nav-item:not(.logout-btn)');
+const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
-  document.querySelectorAll(".tab-section").forEach(sec =>
-    sec.classList.add("hidden")
-  );
+navItems.forEach(item => {
+    const href = item.getAttribute('href');
+    
+    // Set active state based on current page
+    if (href === currentPage || (currentPage === 'index.html' && href === 'dashboard.html')) {
+        item.classList.add('active');
+    }
+});
 
-  document.getElementById(`tab-${tab}`).classList.remove("hidden");
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  const tbody = document.getElementById("docs-body");
-
-  documents.forEach(doc => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${doc.date}</td>
-      <td>${doc.type}</td>
-      <td>${doc.file}</td>
-      <td><button class="btn-secondary">View</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
+// View button functionality
+const viewButtons = document.querySelectorAll('.view-btn');
+viewButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const row = e.target.closest('tr');
+        const fileName = row.querySelector('.file-name').textContent;
+        console.log('Viewing file:', fileName);
+        alert(`Opening ${fileName}...`);
+    });
 });

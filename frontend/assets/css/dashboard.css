@@ -15,7 +15,7 @@ body {
     height: 100vh;
 }
 
-/* Sidebar */
+/* Sidebar - Keep only ONE definition */
 .sidebar {
     width: 256px;
     background: white;
@@ -23,6 +23,7 @@ body {
     display: flex;
     flex-direction: column;
     transition: width 0.3s ease;
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
 }
 
 .sidebar.collapsed {
@@ -38,7 +39,7 @@ body {
 }
 
 .logo {
-    font-size: 24px;
+    font-size: 34px;
     font-weight: bold;
     color: #14b8a6;
     transition: opacity 0.3s ease;
@@ -50,6 +51,7 @@ body {
     overflow: hidden;
 }
 
+/* Toggle button - Keep only ONE definition */
 .toggle-btn {
     background: none;
     border: none;
@@ -57,11 +59,21 @@ body {
     cursor: pointer;
     border-radius: 8px;
     transition: background-color 0.2s;
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .toggle-btn:hover {
     background-color: #f3f4f6;
+}
+
+.toggle-btn svg {
+    display: block;
+}
+
+.icon-menu {
+    display: block;
 }
 
 .icon-close {
@@ -99,6 +111,7 @@ body {
     cursor: pointer;
     transition: all 0.2s;
     text-align: left;
+    text-decoration: none;
 }
 
 .nav-item:hover {
@@ -387,19 +400,6 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        z-index: 1000;
-        transform: translateX(-100%);
-    }
-    
-    .sidebar.open {
-        transform: translateX(0);
-    }
-    
     .stats-grid {
         grid-template-columns: 1fr;
     }
